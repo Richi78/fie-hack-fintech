@@ -37,3 +37,10 @@ export const assistantAnswerSchema = z.object({
 export type AssistantAnswer = z.infer<typeof assistantAnswerSchema>;
 
 export type ChatbotFacts = Record<string, unknown>;
+
+export const chatbotMessageRequestSchema = z.object({
+  businessId: z.string().min(1),
+  message: z.string().trim().min(1).max(800),
+});
+
+export type ChatbotMessageRequest = z.infer<typeof chatbotMessageRequestSchema>;
