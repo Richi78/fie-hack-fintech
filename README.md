@@ -6,6 +6,7 @@ Aplicacion frontend del proyecto **Herramienta Digital para Emprendedores Tinka*
 
 - [Propuesta de solucion](../docs/Propuesta_Solucion_Tinka.md)
 - [Arquitectura del sistema](../docs/architecture.md)
+- [Chatbot IA Gemini MVP](docs/chatbot-mvp.md)
 
 ## Diagrama de componentes
 
