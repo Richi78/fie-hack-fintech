@@ -54,7 +54,7 @@
 
 .navbar__nav {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -113,6 +113,86 @@
   outline-offset: 2px;
 }
 
+/* ─── User Section ─── */
+
+.navbar__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: rgba(15, 27, 45, 0.6);
+  border: 1px solid var(--line);
+}
+
+.navbar__avatar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(18, 184, 134, 0.3),
+    rgba(255, 184, 107, 0.25)
+  );
+  border: 1px solid rgba(100, 241, 181, 0.2);
+  color: var(--text-strong);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.navbar__user-info {
+  min-width: 0;
+}
+
+.navbar__user-info strong {
+  display: block;
+  color: var(--text-strong);
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__user-info small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__logout {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.navbar__logout:hover {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.25);
+  color: #ff8a8a;
+}
+
+.navbar__logout:focus-visible {
+  outline: 2px solid rgba(255, 107, 107, 0.5);
+  outline-offset: 2px;
+}
+
+/* ─── Status (kept for backward compat) ─── */
+
 .navbar__status {
   display: inline-flex;
   align-items: center;
@@ -156,7 +236,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .navbar__status {
+  .navbar__user {
     justify-content: center;
   }
 }
@@ -168,5 +248,9 @@
 
   .navbar__nav {
     grid-template-columns: 1fr;
+  }
+
+  .navbar__user-info {
+    display: none;
   }
 }

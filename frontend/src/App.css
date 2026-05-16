@@ -164,3 +164,26 @@
     max-width: none;
   }
 }
+
+/* ─── App Loading State ─── */
+
+.app-loading {
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+}
+
+.app-loading__spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(100, 241, 181, 0.15);
+  border-top-color: var(--primary-strong);
+  border-radius: 50%;
+  animation: app-spin 0.7s linear infinite;
+}
+
+@keyframes app-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -5,3 +5,9 @@ export async function findUserByEmail(email: string) {
     where: { email },
   });
 }
+
+export async function findUserById(id: string) {
+  return prisma.user.findUnique({
+    where: { id: BigInt(id) },
+  });
+}

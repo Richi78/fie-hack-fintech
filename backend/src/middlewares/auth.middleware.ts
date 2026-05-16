@@ -12,10 +12,10 @@ export function authRequired(req: Request, res: Response, next: NextFunction) {
       return res.status(401).json({ error: "Unauthorized" });
     }
     req.user = {
-      id: payload.sub,
-      email: payload.email,
-      name: payload.name,
-      role: payload.role,
+      id: payload.sub ?? "",
+      email: payload.email ?? "",
+      name: payload.name ?? "",
+      role: payload.role ?? "user",
     };
     return next();
   } catch {

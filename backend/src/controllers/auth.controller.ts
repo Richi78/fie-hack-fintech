@@ -41,10 +41,12 @@ export async function loginUser(
 
 export async function getMe(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = req.user;
-    if (!user) {
+    const userId = req.user?.id;
+    if (!userId) {
       throw new AppError("Unauthorized", 401);
     }
+    // Fetch fresh user data from the database
+    const user = await authService.getUserById(userId);
     return res.status(200).json(serializeBigInt({ user }));
   } catch (error) {
     next(error);

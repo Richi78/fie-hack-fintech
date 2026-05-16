@@ -5,7 +5,27 @@ import jwt from "jsonwebtoken";
 import AppError from "../errors/appError.js";
 import { DEFAULTS } from "../config.js";
 
-export async function registerUser(userData) {
+interface RegisterData {
+  email: string;
+  password: string;
+  name: string;
+}
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+interface UserRecord {
+  id: bigint;
+  email: string;
+  name: string;
+  passwordHash: string;
+  role: string;
+  createdAt: Date;
+}
+
+export async function registerUser(userData: RegisterData) {
   const { email } = userData;
 
   const existingUser = await userRepository.findUserByEmail(email);
@@ -21,7 +41,7 @@ export async function registerUser(userData) {
   };
 }
 
-export async function loginUser(userData) {
+export async function loginUser(userData: LoginData) {
   const { email, password } = userData;
 
   const user = await userRepository.findUserByEmail(email);
@@ -42,21 +62,29 @@ export async function loginUser(userData) {
   };
 }
 
-function signToken(user) {
+export async function getUserById(userId: string) {
+  const user = await userRepository.findUserById(userId);
+  if (!user) {
+    throw new AppError("Usuario no encontrado", 404);
+  }
+  return sanitize(user);
+}
+
+function signToken(user: UserRecord) {
   const payload = {
     sub: String(user.id),
     email: user.email,
     name: user.name,
-    role: user.role || "analyst",
+    role: user.role,
   };
   const secret = DEFAULTS.JWT_SECRET;
   if (!secret) {
     throw new AppError("JWT secret is not configured", 500);
   }
-  return jwt.sign(payload, secret, { expiresIn: DEFAULTS.JWT_EXPIRES_IN });
+  return jwt.sign(payload, secret, { expiresIn: DEFAULTS.JWT_EXPIRES_IN as string & jwt.SignOptions["expiresIn"] });
 }
 
-function sanitize(user) {
+function sanitize(user: UserRecord) {
   if (!user) return user;
   const { passwordHash, ...rest } = user;
   return rest;

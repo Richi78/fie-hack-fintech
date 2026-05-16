@@ -1,12 +1,15 @@
-import "express-serve-static-core";
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
 
-declare module "express-serve-static-core" {
-  interface Request {
-    user?: {
-      id?: string;
-      email?: string;
-      name?: string;
-      role?: string;
-    };
+// Extend Express Request to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthUser;
+    }
   }
 }

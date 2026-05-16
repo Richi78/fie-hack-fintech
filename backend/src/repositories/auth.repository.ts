@@ -2,7 +2,13 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../db.js";
 import AppError from "../errors/appError.js";
 
-export async function registerUser(userData) {
+interface RegisterUserData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export async function registerUser(userData: RegisterUserData) {
   const { name, email, password } = userData;
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -12,12 +18,6 @@ export async function registerUser(userData) {
       name,
       email,
       passwordHash,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      createdAt: true,
     },
   });
 
