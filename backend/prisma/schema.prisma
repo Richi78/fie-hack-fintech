@@ -17,6 +17,5 @@ model User {
   name         String
   email        String   @unique
   passwordHash String
-  role         String   @default("analyst")
   createdAt    DateTime @default(now())
 }
