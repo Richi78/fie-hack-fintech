@@ -18,6 +18,8 @@
 .chat-panel__messages {
   display: grid;
   gap: 14px;
+  align-content: start;
+  min-height: 300px;
 }
 
 .chat-message {
@@ -75,6 +77,21 @@
 .chat-panel__composer input:focus {
   border-color: rgba(238, 0, 138, 0.45);
   box-shadow: 0 0 0 3px rgba(238, 0, 138, 0.14);
+}
+
+.chat-panel__composer input:disabled,
+.chat-panel__composer button:disabled,
+.suggestion-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.chat-panel__error {
+  border: 1px solid rgba(197, 48, 48, 0.28);
+  border-radius: 14px;
+  background: rgba(197, 48, 48, 0.08);
+  color: #9b2c2c;
+  padding: 12px 14px;
 }
 
 .suggestion-list {
