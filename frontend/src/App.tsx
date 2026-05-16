@@ -15,7 +15,7 @@ interface AuthUser {
 
 const views: Record<AppView, JSX.Element> = {
   dashboard: <Dashboard />,
-  sales: <Sales />,
+  sales: <Sales token={token ?? ""} />,
   chatbot: <Chatbot />,
 };
 

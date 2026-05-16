@@ -11,7 +11,7 @@ const navigation = [
   },
   {
     id: "sales",
-    label: "Registro ventas",
+    label: "Mis negocios",
   },
   {
     id: "chatbot",
