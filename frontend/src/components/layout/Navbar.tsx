@@ -25,9 +25,16 @@ const navigation = [
 interface NavbarProps {
   activeView: AppView;
   onChangeView: (view: AppView) => void;
+  userName: string;
+  onLogout: () => void;
 }
 
-export function Navbar({ activeView, onChangeView }: NavbarProps) {
+export function Navbar({
+  activeView,
+  onChangeView,
+  userName,
+  onLogout,
+}: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleChangeView = (view: AppView) => {
@@ -65,7 +72,7 @@ export function Navbar({ activeView, onChangeView }: NavbarProps) {
       <nav
         id="navbar-menu"
         className={isMenuOpen ? "navbar__nav is-open" : "navbar__nav"}
-        aria-label="Navegación principal"
+        aria-label="Navegacion principal"
       >
         {navigation.map((item) => (
           <button
@@ -80,6 +87,17 @@ export function Navbar({ activeView, onChangeView }: NavbarProps) {
             <span>{item.label}</span>
           </button>
         ))}
+
+        <div className="navbar__session">
+          <span className="navbar__session-label">{userName}</span>
+          <button
+            type="button"
+            className="navbar__logout"
+            onClick={onLogout}
+          >
+            Cerrar sesion
+          </button>
+        </div>
       </nav>
     </header>
   );
