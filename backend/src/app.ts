@@ -1,11 +1,11 @@
-import express, { type Request, type Response } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import routes from "./routes/index.js";
 import errorHandler from "./middlewares/error.middleware.js";
 
-const app = express();
+const app: Express = express();
 
 app.use(helmet());
 app.use(cors());

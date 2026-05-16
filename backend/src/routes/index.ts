@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router, type Router as ExpressRouter } from "express";
 import authRoutes from "./auth.routes.js";
 import errorHandler from "../middlewares/error.middleware.js";
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 router.get("/", (_req, res) => {
   res.status(200).send("Backend running");

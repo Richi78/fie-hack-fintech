@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import prisma from "../config/prisma.js";
 import AppError from "../errors/appError.js";
+import type { RegisterUserInput } from "../types/user.js";
 
-export async function registerUser(userData) {
+export async function registerUser(userData: RegisterUserInput) {
   const { name, email, password } = userData;
 
   const createdAt = new Date();

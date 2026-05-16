@@ -2,10 +2,16 @@ import * as userRepository from "../repositories/users.repository.js";
 import * as authRepository from "../repositories/auth.repository.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import type { SignOptions } from "jsonwebtoken";
 import AppError from "../errors/appError.js";
 import { DEFAULTS } from "../config.js";
+import type {
+  AuthenticatedUser,
+  LoginUserInput,
+  RegisterUserInput,
+} from "../types/user.js";
 
-export async function registerUser(userData) {
+export async function registerUser(userData: RegisterUserInput) {
   const { email } = userData;
 
   const existingUser = await userRepository.findUserByEmail(email);
@@ -21,7 +27,7 @@ export async function registerUser(userData) {
   };
 }
 
-export async function loginUser(userData) {
+export async function loginUser(userData: LoginUserInput) {
   const { email, password } = userData;
 
   const user = await userRepository.findUserByEmail(email);
@@ -42,7 +48,7 @@ export async function loginUser(userData) {
   };
 }
 
-function signToken(user) {
+function signToken(user: AuthenticatedUser) {
   const payload = {
     sub: String(user.id),
     email: user.email,
@@ -53,11 +59,14 @@ function signToken(user) {
   if (!secret) {
     throw new AppError("JWT secret is not configured", 500);
   }
-  return jwt.sign(payload, secret, { expiresIn: DEFAULTS.JWT_EXPIRES_IN });
+  const options: SignOptions = {
+    expiresIn: DEFAULTS.JWT_EXPIRES_IN as SignOptions["expiresIn"],
+  };
+  return jwt.sign(payload, secret, options);
 }
 
-function sanitize(user) {
+function sanitize<T extends object>(user: T | null) {
   if (!user) return user;
-  const { passwordHash, ...rest } = user;
+  const { passwordHash, ...rest } = user as T & { passwordHash?: string };
   return rest;
 }
