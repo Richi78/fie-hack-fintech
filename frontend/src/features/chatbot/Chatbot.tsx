@@ -32,7 +32,11 @@ const initialMessages: ChatMessage[] = [
 ];
 
 function getAuthToken() {
-  return localStorage.getItem("token") ?? localStorage.getItem("authToken");
+  return (
+    localStorage.getItem("auth_token") ??
+    localStorage.getItem("token") ??
+    localStorage.getItem("authToken")
+  );
 }
 
 function getBusinessId() {
