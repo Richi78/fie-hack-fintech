@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navbar, type AppView } from "./components/layout/Navbar";
+import { Calculator } from "./features/calculator/Calculator";
 import { Chatbot } from "./features/chatbot/Chatbot";
 import { Dashboard } from "./features/dashboard/Dashboard";
 import { Sales } from "./features/sales/Sales";
@@ -8,6 +9,7 @@ import "./App.css";
 const views: Record<AppView, JSX.Element> = {
   dashboard: <Dashboard />,
   sales: <Sales />,
+  calculator: <Calculator />,
   chatbot: <Chatbot />,
 };
 
