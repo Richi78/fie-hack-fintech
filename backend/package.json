@@ -13,6 +13,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:db:push": "prisma db push",
     "prisma:db:pull": "prisma db pull",
+    "prisma:seed:chatbot": "tsx prisma/seed-chatbot.ts",
     "prisma:format": "prisma format",
     "prisma:studio": "prisma studio",
     "test": "echo \"Error: no test specified\" && exit 1"
