@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useState, useMemo, type ReactNode } from "react";
+import { marked } from "marked";
 import "./Calculator.css";
 
 /* ─── SVG Icons ───────────────────────────────────────────────────── */
@@ -124,6 +125,30 @@ const Icons = {
       <line x1="1" y1="14" x2="4" y2="14" />
     </Icon>
   ),
+  shield: (s = 20) => (
+    <Icon size={s}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </Icon>
+  ),
+  zap: (s = 20) => (
+    <Icon size={s}>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </Icon>
+  ),
+  rocket: (s = 20) => (
+    <Icon size={s}>
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+    </Icon>
+  ),
+  compass: (s = 20) => (
+    <Icon size={s}>
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+    </Icon>
+  ),
 };
 
 /* ─── Types ───────────────────────────────────────────────────────── */
@@ -183,6 +208,7 @@ interface BudgetResult {
   recommendations: Recommendation[];
   projections: Projection[];
   summary: string;
+  aiAnalysis: string;
 }
 
 /* ─── Constants ───────────────────────────────────────────────────── */
@@ -261,6 +287,136 @@ function getRecIcon(type: string): ReactNode {
     default:
       return Icons.info(18);
   }
+}
+
+/* ─── AI Analysis Card Component ──────────────────────────────────── */
+
+interface AiSection {
+  iconKey: string;
+  title: string;
+  htmlContent: string;
+}
+
+/** Maps section title keywords → icon key + color scheme */
+const SECTION_THEME_MAP: Array<{
+  keywords: string[];
+  iconKey: keyof typeof Icons;
+  accent: string;
+  bg: string;
+}> = [
+  { keywords: ["diagnóstico", "diagnostico", "general", "evaluación", "evaluacion"],
+    iconKey: "target", accent: "#667eea", bg: "rgba(102,126,234,0.08)" },
+  { keywords: ["precio", "precios", "pricing", "estrategia de precio"],
+    iconKey: "dollarSign", accent: "#f5576c", bg: "rgba(245,87,108,0.08)" },
+  { keywords: ["proyección", "proyeccion", "financier", "escenario"],
+    iconKey: "barChart", accent: "#4facfe", bg: "rgba(79,172,254,0.08)" },
+  { keywords: ["acciones", "inmediata", "pasos", "acción", "accion"],
+    iconKey: "zap", accent: "#f39c12", bg: "rgba(243,156,18,0.08)" },
+  { keywords: ["riesgo", "riesgos", "gestión", "gestion", "mitig"],
+    iconKey: "shield", accent: "#a18cd1", bg: "rgba(161,140,209,0.08)" },
+  { keywords: ["crecimiento", "oportunidad", "escalar", "crecer", "expansi"],
+    iconKey: "rocket", accent: "#13547a", bg: "rgba(19,84,122,0.08)" },
+];
+
+const DEFAULT_THEME = { iconKey: "compass" as keyof typeof Icons, accent: "#44c2f4", bg: "rgba(68,194,244,0.08)" };
+
+function matchSectionTheme(title: string) {
+  const lower = title.toLowerCase();
+  for (const entry of SECTION_THEME_MAP) {
+    if (entry.keywords.some((kw) => lower.includes(kw))) return entry;
+  }
+  return DEFAULT_THEME;
+}
+
+function parseAiSections(markdown: string): AiSection[] {
+  const sections: AiSection[] = [];
+  const parts = markdown.split(/^## /gm).filter(Boolean);
+
+  for (const part of parts) {
+    const firstNewline = part.indexOf("\n");
+    if (firstNewline === -1) continue;
+
+    const headerLine = part.substring(0, firstNewline).trim();
+    const body = part.substring(firstNewline + 1).trim();
+    if (!body) continue;
+
+    // Strip leading emojis from title
+    const title = headerLine
+      .replace(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F?)\s*/u, "")
+      .trim();
+
+    const theme = matchSectionTheme(title);
+    const htmlContent = marked.parse(body, { async: false }) as string;
+
+    sections.push({ iconKey: theme.iconKey, title, htmlContent });
+  }
+
+  return sections;
+}
+
+function AiAnalysisCard({ analysis, productName }: { analysis: string; productName: string }) {
+  const sections = useMemo(() => parseAiSections(analysis), [analysis]);
+  const fallbackHtml = useMemo(() => marked.parse(analysis, { async: false }) as string, [analysis]);
+
+  const headerBlock = (
+    <div className="ai-analysis__header">
+      <div className="ai-analysis__header-icon">{Icons.sparkles(28)}</div>
+      <div className="ai-analysis__header-text">
+        <span className="ai-analysis__eyebrow">Análisis Estratégico IA</span>
+        <h3>Recomendaciones para <strong>{productName}</strong></h3>
+      </div>
+      <span className="ai-analysis__badge">
+        {Icons.cpu(14)}
+        Gemini AI
+      </span>
+    </div>
+  );
+
+  if (sections.length === 0) {
+    return (
+      <div className="ai-analysis" id="ai-analysis-section">
+        {headerBlock}
+        <div
+          className="ai-analysis__content ai-markdown"
+          dangerouslySetInnerHTML={{ __html: fallbackHtml }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="ai-analysis" id="ai-analysis-section">
+      {headerBlock}
+      <div className="ai-analysis__sections">
+        {sections.map((section, index) => {
+          const theme = matchSectionTheme(section.title);
+          const renderIcon = Icons[theme.iconKey as keyof typeof Icons];
+          return (
+            <article
+              key={section.title}
+              className="ai-section-card"
+              style={{
+                animationDelay: `${index * 100}ms`,
+                "--section-accent": theme.accent,
+                "--section-bg": theme.bg,
+              } as React.CSSProperties}
+            >
+              <div className="ai-section-card__header">
+                <div className="ai-section-card__icon">
+                  {renderIcon(20)}
+                </div>
+                <h4>{section.title}</h4>
+              </div>
+              <div
+                className="ai-section-card__body ai-markdown"
+                dangerouslySetInnerHTML={{ __html: section.htmlContent }}
+              />
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 /* ─── Component ───────────────────────────────────────────────────── */
@@ -815,12 +971,16 @@ export function Calculator() {
             </div>
           </article>
 
-          {/* Summary */}
-          <div className="calc-summary">
-            <div className="calc-summary__icon">{Icons.cpu(24)}</div>
-            <h3>Resumen del análisis IA</h3>
-            <p>{result.summary}</p>
-          </div>
+          {/* AI Analysis */}
+          {result.aiAnalysis ? (
+            <AiAnalysisCard analysis={result.aiAnalysis} productName={result.productName} />
+          ) : (
+            <div className="calc-summary">
+              <div className="calc-summary__icon">{Icons.cpu(24)}</div>
+              <h3>Resumen del análisis</h3>
+              <p>{result.summary}</p>
+            </div>
+          )}
         </div>
       )}
     </section>

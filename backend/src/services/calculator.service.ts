@@ -10,7 +10,10 @@
  *  - Profitability scoring
  *  - Risk assessment
  *  - AI-generated recommendations
+ *  - Gemini-powered strategic analysis
  */
+
+import { GoogleGenAI } from "@google/genai";
 
 export interface BudgetInput {
   productName: string;
@@ -86,6 +89,7 @@ export interface BudgetResult {
   recommendations: Recommendation[];
   projections: Projection[];
   summary: string;
+  aiAnalysis: string;
 }
 
 // ─── AI Analysis Logic ───────────────────────────────────────────────
@@ -523,9 +527,111 @@ function generateSummary(
   return parts.join(" ");
 }
 
+// ─── AI-Powered Strategic Analysis ───────────────────────────────────
+
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite";
+
+async function generateAiAnalysis(
+  input: BudgetInput,
+  costBreakdown: CostBreakdown,
+  breakEven: BreakEvenAnalysis,
+  risk: RiskAssessment,
+  viabilityScore: number,
+  viabilityLabel: string,
+): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return "";
+  }
+
+  const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
+  const ai = new GoogleGenAI({ apiKey });
+
+  const financialContext = JSON.stringify({
+    producto: input.productName,
+    categoria: input.category,
+    canalDeVenta: input.salesChannel,
+    costoUnitario: input.unitCost,
+    precioDeVenta: input.sellingPrice,
+    costosFijos: input.fixedCosts,
+    costosVariablesPorUnidad: input.variableCostPerUnit,
+    ventasMensualesEstimadas: input.estimatedMonthlySales,
+    inversionInicial: input.initialInvestment,
+    margenGanancia: `${costBreakdown.marginPercentage.toFixed(1)}%`,
+    gananciaMensual: costBreakdown.monthlyProfit,
+    ingresoMensual: costBreakdown.monthlyRevenue,
+    costoMensualTotal: costBreakdown.monthlyTotalCosts,
+    puntoEquilibrio: {
+      unidades: breakEven.breakEvenUnits,
+      meses: breakEven.breakEvenMonths,
+      recuperacionInversion: breakEven.investmentRecoveryMonths,
+    },
+    riesgo: {
+      nivel: risk.overallRisk,
+      puntaje: risk.riskScore,
+      factores: risk.factors.map(f => `${f.name}: ${f.level} - ${f.description}`),
+    },
+    viabilidad: {
+      puntaje: viabilityScore,
+      etiqueta: viabilityLabel,
+    },
+  }, null, 2);
+
+  const prompt = [
+    "Eres un consultor financiero experto de Tinka, especializado en emprendimientos en Bolivia.",
+    "Tu tarea es generar un análisis estratégico DETALLADO y de ALTA CALIDAD para un emprendedor.",
+    "",
+    "FORMATO DE RESPUESTA (usa Markdown con las siguientes secciones exactas):",
+    "",
+    "## Diagnóstico General",
+    "Escribe 2-3 párrafos evaluando la viabilidad general del negocio. Sé específico con los números.",
+    "",
+    "## Estrategia de Precios",
+    "Analiza si el precio actual es adecuado. Sugiere ajustes concretos si es necesario. Compara con el mercado boliviano.",
+    "",
+    "## Proyección Financiera",
+    "Describe escenarios optimista, realista y pesimista para los próximos 6-12 meses. Usa cifras concretas en Bs.",
+    "",
+    "## Acciones Inmediatas",
+    "Lista 3-5 acciones concretas que el emprendedor debe tomar en los próximos 30 días. Sé muy específico.",
+    "",
+    "## Gestión de Riesgos",
+    "Identifica los riesgos principales y cómo mitigarlos. Incluye plan B para cada riesgo.",
+    "",
+    "## Oportunidades de Crecimiento",
+    "Sugiere 2-3 formas concretas de escalar el negocio una vez validado.",
+    "",
+    "REGLAS:",
+    "- Escribe siempre en español claro y profesional.",
+    "- Usa cifras concretas en Bs (bolivianos) basadas en los datos proporcionados.",
+    "- Sé directo y accionable, no uses lenguaje genérico.",
+    "- Adapta los consejos al contexto del mercado boliviano.",
+    "- No uses tablas. Usa listas y párrafos.",
+    "- Cada sección debe tener al menos 2-3 párrafos o puntos sustanciales.",
+    "- Usa **negritas** para resaltar datos clave y cifras importantes.",
+    "- NO uses emojis en los títulos ni en el contenido.",
+    "",
+    "DATOS FINANCIEROS DEL PRODUCTO:",
+    financialContext,
+  ].join("\n");
+
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+    });
+
+    const reply = response.text?.trim();
+    return reply || "";
+  } catch (error) {
+    console.error("Error generating AI analysis:", error);
+    return "";
+  }
+}
+
 // ─── Main Service Function ───────────────────────────────────────────
 
-export function analyzeBudget(input: BudgetInput): BudgetResult {
+export async function analyzeBudget(input: BudgetInput): Promise<BudgetResult> {
   const costBreakdown = computeCostBreakdown(input);
   const breakEven = computeBreakEven(input, costBreakdown);
   const risk = assessRisk(input, costBreakdown, breakEven);
@@ -543,6 +649,16 @@ export function analyzeBudget(input: BudgetInput): BudgetResult {
   );
   const summary = generateSummary(input, costBreakdown, breakEven, score);
 
+  // Generate AI-powered strategic analysis in parallel
+  const aiAnalysis = await generateAiAnalysis(
+    input,
+    costBreakdown,
+    breakEven,
+    risk,
+    score,
+    label,
+  );
+
   return {
     productName: input.productName,
     category: input.category,
@@ -554,5 +670,6 @@ export function analyzeBudget(input: BudgetInput): BudgetResult {
     recommendations,
     projections,
     summary,
+    aiAnalysis,
   };
 }

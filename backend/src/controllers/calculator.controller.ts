@@ -68,7 +68,7 @@ export async function analyzeProduct(
       analysisMonths: analysisMonths ? Number(analysisMonths) : 12,
     };
 
-    const result = analyzeBudget(input);
+    const result = await analyzeBudget(input);
 
     return res.status(200).json({ success: true, data: result });
   } catch (error) {

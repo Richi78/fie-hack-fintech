@@ -155,4 +155,14 @@
   .app-intro h1 {
     max-width: none;
   }
+
+  .app-view {
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-view {
+    padding: 10px 14px;
+  }
 }
